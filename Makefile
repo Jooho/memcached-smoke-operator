@@ -153,6 +153,7 @@ bundle-build:
 	docker build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 
 ##########Template#############
+
 # Build the podman image
 podman-build: test
 	podman build . -t ${IMG}
@@ -165,12 +166,21 @@ podman-push:
 bundle-p-build:
 	podman build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 
+# Deploy
+# Run operator locally as a background process
+deploy-op-local: manifests generate fmt vet install ## Run a controller from your host.
+	go run ./main.go &
+	./hack/scripts/deploy-op-local-with-cr.sh
+
+clean-op-local:
+	./hack/scripts/delete-cr.sh
+	kill -9 $(shell ps -ef|grep main.go|awk '{print $$2}'|head -1)
+	kill -9 $(shell netstat -tunlp|grep 8080| awk '{print $$NF'}|cut -d/ -f1)
+
 
 # Test
 .PHONY: test-op-local test-op-cluster test-bundle test-index 
-deploy-op-local: install
-	oc project ${NAMESPACE} || oc new-project ${NAMESPACE} 
-	make run ENABLE_WEBHOOKS=false
+
 
 deploy-nfs-local: install
 	./hack/scripts/deploy-nfs-local.sh

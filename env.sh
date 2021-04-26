@@ -1,4 +1,6 @@
 export OP_NAME=memcached-smoke-operator
+export CR_NAME=Memcached
+export TARGET_DEPLOY_NAME=memcached-sample
 export NAMESPACE=${OP_NAME}
 export VERSION=0.0.1
 export TAG=${VERSION}
